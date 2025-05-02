@@ -253,20 +253,21 @@
       transition: opacity 0.4s ease;
     }
   </style>
+
+  <!-- ✅ Scripts Firebase compatíveis com navegador -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 </head>
 <body onload="initCatalog()">
-  <!-- Tela de carregamento -->
   <div id="loadingScreen">
     <div>Carregando Catálogo...</div>
     <div class="spinner"></div>
   </div>
 
-  <!-- Cabeçalho -->
   <header>
     <h1 id="tituloCatalogo">DN Street Modas</h1>
   </header>
 
-  <!-- Conteúdo principal -->
   <div class="container" onclick="clicouFora(event)">
     <h2>Categorias</h2>
     <div class="categorias" id="categoriasContainer"></div>
@@ -276,7 +277,6 @@
 
     <button class="admin-button" onclick="toggleAdminLogin()">Área do Administrador</button>
 
-    <!-- Área de login do administrador -->
     <div id="adminLogin">
       <h2>Login do Admin</h2>
       <input type="email" placeholder="E-mail" id="email" />
@@ -284,21 +284,20 @@
       <button onclick="loginAdmin()">Entrar</button>
     </div>
 
-    <!-- Painel do administrador -->
     <div id="adminPanel">
       <h2>Painel do Administrador</h2>
 
       <label for="tituloNovo">Alterar Título do Catálogo:</label>
-      <input type="text" id="tituloNovo" placeholder="Ex: Catálogo DN Street" />
+      <input type="text" id="tituloNovo" placeholder="Ex: Catálogo Verão DN Street" />
       <button onclick="alterarTitulo()">Alterar Título</button>
 
-      <hr style="margin: 20px 0; border: 1px dashed #aaa;" />
+      <hr style="margin: 20px 0; border: 1px dashed #aaa;">
 
       <label for="nomeCategoria">Nova Categoria:</label>
       <input type="text" id="nomeCategoria" placeholder="Nome da Categoria" />
       <button onclick="addCategoria()">Adicionar Categoria</button>
 
-      <hr style="margin: 20px 0; border: 1px dashed #aaa;" />
+      <hr style="margin: 20px 0; border: 1px dashed #aaa;">
 
       <label for="nomeProduto">Nome do Produto:</label>
       <input type="text" id="nomeProduto" placeholder="Nome do Produto" />
@@ -307,7 +306,7 @@
       <input type="number" id="precoProduto" min="0" placeholder="Ex: 49.90" />
 
       <label for="descricaoProduto">Descrição (opcional):</label>
-      <textarea id="descricaoProduto" placeholder="Ex: Camiseta oversized, tecido leve..."></textarea>
+      <textarea id="descricaoProduto" placeholder="Ex: Camiseta Oversized, tecido leve..."></textarea>
 
       <label for="imgProduto">Imagens do Produto:</label>
       <input type="file" id="imgProduto" multiple />
@@ -321,31 +320,24 @@
 
       <button onclick="addProduto()">Adicionar Produto</button>
 
-      <hr style="margin: 20px 0; border: 1px dashed #aaa;" />
+      <hr style="margin: 20px 0; border: 1px dashed #aaa;">
 
       <label for="bgImage">Imagem de Fundo:</label>
       <input type="file" id="bgImage" onchange="changeBackgroundImage()" />
-      <br /><br />
+      <br><br>
       <button onclick="salvarTudo()">Salvar Catálogo</button>
     </div>
   </div>
 
-  <!-- Rodapé -->
   <footer>
     <p>&copy; 2025 DN Street Modas</p>
   </footer>
 
-  <!-- Botão flutuante do WhatsApp -->
   <a class="whatsapp-float" href="https://wa.me/27999132634" target="_blank" title="Fale conosco no WhatsApp">
     <i class="fab fa-whatsapp"></i>
   </a>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-  import {
-    getFirestore, collection, getDocs, addDoc,
-    deleteDoc, doc
-  } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-
+<script>
+  // Inicializar Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyAigVxxkrN4TKyV31zR29anZoINdjB7T64",
     authDomain: "catalogo-dnstreet.firebaseapp.com",
@@ -355,9 +347,8 @@
     messagingSenderId: "1089905081847",
     appId: "1:1089905081847:web:373cdbb0c0c9649a4482f2"
   };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
   let categorias = [];
   let produtos = [];
@@ -375,13 +366,13 @@
 
   async function carregarCategorias() {
     categorias = [];
-    const snapshot = await getDocs(collection(db, "categorias"));
+    const snapshot = await db.collection("categorias").get();
     snapshot.forEach(doc => categorias.push(doc.data().nome));
   }
 
   async function carregarProdutos() {
     produtos = [];
-    const snapshot = await getDocs(collection(db, "produtos"));
+    const snapshot = await db.collection("produtos").get();
     snapshot.forEach(doc => produtos.push(doc.data()));
   }
 
@@ -389,7 +380,7 @@
     const nome = document.getElementById("nomeCategoria").value.trim();
     if (nome && !categorias.includes(nome)) {
       categorias.push(nome);
-      await addDoc(collection(db, "categorias"), { nome });
+      await db.collection("categorias").add({ nome });
       renderCategorias();
     }
     document.getElementById("nomeCategoria").value = "";
@@ -415,7 +406,7 @@
 
     const produto = { nome, preco, descricao, categoria, imagens, promo: promocao };
     produtos.push(produto);
-    await addDoc(collection(db, "produtos"), produto);
+    await db.collection("produtos").add(produto);
     renderProdutos(produtos.filter(p => p.promo));
 
     document.getElementById("nomeProduto").value = "";
@@ -555,7 +546,7 @@
   }
 
   function salvarTudo() {
-    alert("Alterações salvas no banco de dados Firebase.");
+    alert("Alterações salvas automaticamente no Firebase.");
   }
 
   function changeBackgroundImage() {
